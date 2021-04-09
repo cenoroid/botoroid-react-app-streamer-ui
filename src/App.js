@@ -1,26 +1,38 @@
 import React, { Component } from "react";
+import Header from "./components/header";
+import Footer from "./components/footer";
 import io from "socket.io-client";
 
 import "./App.css";
-const socket = io("https://botoroid-express-app.herokuapp.com");
-
+//const socket = io("https://botoroid-express-app.herokuapp.com/");
+const socket = io("http://localhost:4000/");
 class App extends Component {
   componentDidMount() {
-    this.connectToServer();
     this.listenToServer();
-    this.getRequests();
   }
-  connectToServer = () => {
-    socket.on("connected");
-  };
+
   listenToServer = () => {
+    socket.emit("getrequests");
     socket.on("getrequests", (data) => {
       this.setState({ requests: data });
     });
+    socket.on("getlog", (data) => {
+      console.log(new Date(data[0].date));
+      let currentDate = new Date();
+      let date = [];
+      for (let index = 0; index < data.length; index++) {
+        date[index] = new Date(data[index].date);
+        let hours = Math.ceil(Math.abs(currentDate - date[index]) / 3600000);
+        if (hours < 24) {
+          data[index].date = hours + "h";
+        } else data[index].date = Math.floor(hours / 24) + "d";
+      }
+
+      let log = [...data];
+      this.setState({ log, showLog: true });
+    });
   };
-  getRequests = () => {
-    socket.emit("getrequests");
-  };
+
   handleRemove = (request) => {
     let requests = [...this.state.requests];
     requests.splice(request.id - 1, 1);
@@ -30,7 +42,7 @@ class App extends Component {
     this.setState({ requests });
     socket.emit("deleterequest", { requests, request });
   };
-  timerInterval = 0;
+
   openInNewTab = (request) => {
     const newWindow = window.open(
       request.link,
@@ -41,50 +53,6 @@ class App extends Component {
     this.handleStart(request);
   };
 
-  timer = () => {
-    if (this.state.timer > 0) {
-      this.setState((prevState) => {
-        return { timer: prevState.timer - 1 };
-      });
-    } else {
-      this.setState({ timerStatus: "stopped" });
-      clearInterval(this.timerInterval);
-    }
-  };
-  timerConvert = () => {
-    let minutes = Math.floor(this.state.timer / 60);
-    let seconds = Math.floor(this.state.timer % 60);
-    if (minutes < 10) {
-      minutes = "0" + minutes;
-    }
-    if (seconds < 10) {
-      seconds = "0" + seconds;
-    }
-    return minutes + "m" + seconds + "s";
-  };
-  handleStart = (request) => {
-    let timer;
-    if (request.type === "short video request") {
-      timer = 600;
-    } else timer = 15;
-    this.setState({ timerStatus: "running", timer: timer });
-    socket.emit("starttimer", { timer: timer, request });
-    this.timerInterval = setInterval(this.timer, 1000);
-  };
-  handlePause = () => {
-    if (this.state.timerStatus === "running") {
-      this.setState({ timerStatus: "paused" });
-      clearInterval(this.timerInterval);
-    } else {
-      this.setState({ timerStatus: "running" });
-      this.timerInterval = setInterval(this.timer, 1000);
-    }
-    socket.emit("pausetimer");
-  };
-  handleStop = () => {
-    this.setState({ timer: 0 });
-    socket.emit("stoptimer");
-  };
   startingEntry;
   endingEntry;
   highlights = document.querySelectorAll(".notHovering");
@@ -106,7 +74,6 @@ class App extends Component {
     let highlights = document.querySelectorAll(".hovering");
     for (let highlight of highlights) {
       highlight.className = "notHovering";
-      // lastempty.className="lastempty"
     }
   };
   dragOver = (e) => {
@@ -134,44 +101,41 @@ class App extends Component {
     });
     console.log(this.startingEntry, this.endingEntry);
   };
-  state = { requests: [], timerStatus: "stopped", timer: null };
+  handleAddCurrency = (username, value) => {
+    if (username !== "" && value !== "") {
+      socket.emit("updatecurrency", { username, value });
+    }
+  };
+  handleExitLog = () => {
+    this.setState({ showLog: false });
+  };
+  state = { requests: [], log: [], showLog: false };
   render() {
     console.log(this.state);
-    const renderHeaderButton = () => {
-      let bgColor;
-      if (this.state.timerStatus === "stopped") {
-        return (
-          <div className="header">
-            <button
-              onClick={() => this.handleStart(this.state.requests[0])}
-              className="buttonStart"
-            >
-              Start
-            </button>
-          </div>
-        );
-      } else if (this.state.timerStatus === "running") {
-        bgColor = "rgb(0, 188, 212)";
-      } else bgColor = "rgb(240, 98, 146, 0.5)";
+    if (this.state.showLog) {
       return (
-        <div className="header">
-          <button onClick={this.handleStop} className="buttonStop">
-            Stop
-          </button>
-          <button
-            onClick={this.handlePause}
-            style={{ backgroundColor: bgColor }}
-            className="buttonPause"
-          >
-            II
-          </button>
+        <div>
+          <button onClick={this.handleExitLog}>←</button>
+          {this.state.log.map((log) => (
+            <div key={log._id}>
+              {log.date}-{log.user} redeemed {log.event.type} for{" "}
+              {log.event.cost}
+            </div>
+          ))}
         </div>
       );
-    };
+    }
     return (
       <div>
-        <div>{this.timerConvert()}</div>
-        <div>{renderHeaderButton()}</div>
+        <Header
+          socket={socket}
+          timerStatus={this.state.timerStatus}
+          onStart={() => {
+            this.handleStart(this.state.requests[0]);
+          }}
+          onPause={this.handlePause}
+          onStop={this.handleStop}
+        />
         <div
           className="firstempty"
           id="e0"
@@ -182,7 +146,7 @@ class App extends Component {
         ></div>
         <div className="notHovering" id="h0"></div>
         {this.state.requests.map((request) => (
-          <div>
+          <div key={"keyR" + request.id}>
             <button
               draggable="true"
               onDragEnd={this.dragEnd}
@@ -192,7 +156,6 @@ class App extends Component {
               }}
               id={request.id}
               className="button1"
-              key={request.id}
               request={request}
             >
               {request.id}. {request.message} - {request.name}
@@ -214,6 +177,13 @@ class App extends Component {
             <div className="notHovering" id={"h" + request.id}></div>
           </div>
         ))}
+        <Footer
+          socket={socket}
+          onViewLog={() => this.handleViewLog()}
+          onCbucksAdd={(username, amount) =>
+            this.handleAddCurrency(username, amount)
+          }
+        />
       </div>
     );
   }
