@@ -2,10 +2,9 @@ import React, { Component } from "react";
 import Header from "./components/header";
 import Footer from "./components/footer";
 import io from "socket.io-client";
-
 import "./App.css";
-//const socket = io("https://botoroid-express-app.herokuapp.com/");
-const socket = io("http://localhost:4000/");
+const socket = io("https://botoroid-express-app.herokuapp.com/");
+//const socket = io("http://localhost:4000/");
 class App extends Component {
   componentDidMount() {
     this.listenToServer();
