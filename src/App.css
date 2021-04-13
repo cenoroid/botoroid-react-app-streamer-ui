@@ -50,6 +50,7 @@ body {
   font-size: 11px;
 }
 .button1 {
+  display: inline-block;
   outline: none;
   position: relative;
   height: 23px;
@@ -58,6 +59,7 @@ body {
   border: 1px rgb(0, 188, 212);
   border-radius: 3px;
   margin-top: 2px;
+  margin-bottom: -4px;
 }
 
 .link {
@@ -67,12 +69,22 @@ body {
   color: white;
   outline: 0;
   position: absolute;
-  width: calc(100vw - 26px);
+  width: calc(100% - 26px);
   padding-top: 5px;
   height: 23px;
   text-align: center;
   white-space: nowrap;
-  overflow: hidden;
+  
+}
+.requestMessage{
+  display:inline-block;
+  max-width:80%;
+  overflow:hidden;
+  white-space: nowrap;
+  vertical-align:top;
+}
+.link:hover {
+  cursor: default;
 }
 .header {
   margin-bottom: 3px;

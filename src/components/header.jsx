@@ -17,9 +17,6 @@ class Header extends Component {
       }
     });
   };
-  handleStart = () => {
-    this.props.socket.emit("starttimer");
-  };
   handlePause = () => {
     if (this.state.timerStatus === "running") {
       this.setState({ timerStatus: "paused" });
@@ -32,19 +29,18 @@ class Header extends Component {
     this.setState({ timerStatus: "stopped" });
     this.props.socket.emit("stoptimer");
   };
-
   state = { timer: 0, timerStatus: "stopped" };
   render() {
     console.log(this.state);
     return (
       <div>
         <div className="timer">
-          <Timer socket={this.props.socket} />
+          <Timer socket={this.props.socket} onStop={this.handleStop} />
         </div>
         <div className="header">
           <TimerControl
             timerStatus={this.state.timerStatus}
-            onStart={this.handleStart}
+            onStart={this.props.onStart}
             onStop={this.handleStop}
             onPause={this.handlePause}
           />

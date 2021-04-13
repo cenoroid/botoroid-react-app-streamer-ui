@@ -35,6 +35,7 @@ class Timer extends Component {
       });
     } else {
       this.setState({ timerRunning: false });
+      this.props.onStop();
       clearInterval(this.timerInterval);
     }
   };
