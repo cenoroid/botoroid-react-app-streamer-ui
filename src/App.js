@@ -106,7 +106,10 @@ class App extends Component {
   };
   handleAddCurrency = (username, value) => {
     if (username !== "" && value !== "") {
-      socket.emit("updatecurrency", { username, value });
+      socket.emit("updatecurrency", {
+        username: username.toLowerCase(),
+        value,
+      });
     }
   };
   handleExitLog = () => {

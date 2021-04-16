@@ -23,12 +23,14 @@ class Timer extends Component {
       }
     });
     this.props.socket.on("stoptimer", () => {
+      console.log("this happens");
       this.setState({ timer: 0 });
       console.log(this.state);
     });
   };
   timerInterval;
   timer = () => {
+    console.log(this.state.timer);
     if (this.state.timer > 0) {
       this.setState((prevState) => {
         return { timer: prevState.timer - 1 };

@@ -1,7 +1,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Noto+Sans&display=swap");
 
 body {
-  background-color: rgb(49, 54, 59);
+  background-color: transparent;
   margin: 0;
   padding: 0px;
   overflow-y: scroll;
@@ -74,14 +74,13 @@ body {
   height: 23px;
   text-align: center;
   white-space: nowrap;
-  
 }
-.requestMessage{
-  display:inline-block;
-  max-width:80%;
-  overflow:hidden;
+.requestMessage {
+  display: inline-block;
+  max-width: 80%;
+  overflow: hidden;
   white-space: nowrap;
-  vertical-align:top;
+  vertical-align: top;
 }
 .link:hover {
   cursor: default;
