@@ -1,7 +1,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Noto+Sans&display=swap");
 
 body {
-  background-color: transparent;
+  background-color: rgb(49, 54, 59);
   margin: 0;
   padding: 0px;
   overflow-y: scroll;
