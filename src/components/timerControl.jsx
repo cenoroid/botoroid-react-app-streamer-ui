@@ -1,11 +1,11 @@
-import React, { Component } from "react";
+import React from "react";
 
-class TimerControl extends Component {
-  buttonPause = () => {
-    if (this.props.timerStatus === "paused") {
+const TimerControl = (props) => {
+  function buttonPause() {
+    if (props.timerStatus === "paused") {
       return (
         <button
-          onClick={this.props.onPause}
+          onClick={props.onPause}
           onMouseDown={(e) => e.preventDefault()}
           className="buttonPaused"
         >
@@ -15,34 +15,31 @@ class TimerControl extends Component {
     }
     return (
       <button
-        onClick={this.props.onPause}
+        onClick={props.onPause}
         onMouseDown={(e) => e.preventDefault()}
         className="buttonPause"
       >
         II
       </button>
     );
-  };
-
-  render() {
-    if (this.props.timerStatus === "stopped") {
-      return (
-        <div className="header">
-          <button onClick={this.props.onStart} className="buttonStart">
-            Start
-          </button>
-        </div>
-      );
-    }
+  }
+  if (props.timerStatus === "stopped") {
     return (
-      <div>
-        <button onClick={this.props.onStop} className="buttonStop">
-          Stop
+      <div className="header">
+        <button onClick={props.onStart} className="buttonStart">
+          Start
         </button>
-        {this.buttonPause()}
       </div>
     );
   }
-}
+  return (
+    <div>
+      <button onClick={props.onStop} className="buttonStop">
+        Stop
+      </button>
+      {buttonPause()}
+    </div>
+  );
+};
 
 export default TimerControl;

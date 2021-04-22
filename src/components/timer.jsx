@@ -1,49 +1,47 @@
-import React, { Component } from "react";
+import React, { useState, useEffect } from "react";
 
-class Timer extends Component {
-  componentDidMount() {
-    this.getTimer();
-  }
-  getTimer = () => {
-    this.props.socket.on("starttimer", (timer, timerRunning) => {
-      if (timer > 0) {
-        this.setState({ timer, timerRunning });
-        if (timerRunning) {
-          this.timerInterval = setInterval(this.timer, 1000);
-        }
+const Timer = (props) => {
+  const [timer, setTimer] = useState(0);
+  const [timerRunning, setTimerRunning] = useState(false);
+  useEffect(() => {
+    props.socket.on("starttimer", (resTimer, resTimerRunning) => {
+      if (resTimer > 0) {
+        setTimer(resTimer);
+        setTimerRunning(resTimerRunning);
       }
     });
-    this.props.socket.on("pausetimer", () => {
-      if (this.state.timerRunning) {
-        this.setState({ timerRunning: false });
-        clearInterval(this.timerInterval);
-      } else {
-        this.setState({ timerRunning: true });
-        this.timerInterval = setInterval(this.timer, 1000);
+    props.socket.on("pausetimer", () => {
+      setTimerRunning((prev) => !prev);
+    });
+    props.socket.on("stoptimer", () => {
+      setTimer(0);
+    });
+    return () => {
+      props.socket.off("stoptimer");
+      props.socket.off("pausetimer");
+      props.socket.off("starttimer");
+    };
+    // eslint-disable-next-line
+  }, []);
+  useEffect(() => {
+    if (timer > 0) {
+      if (timerRunning) {
+        setTimeout(() => {
+          setTimer((prev) => prev - 1);
+        }, 1000);
       }
-    });
-    this.props.socket.on("stoptimer", () => {
-      console.log("this happens");
-      this.setState({ timer: 0 });
-      console.log(this.state);
-    });
-  };
-  timerInterval;
-  timer = () => {
-    console.log(this.state.timer);
-    if (this.state.timer > 0) {
-      this.setState((prevState) => {
-        return { timer: prevState.timer - 1 };
-      });
     } else {
-      this.setState({ timerRunning: false });
-      this.props.onStop();
-      clearInterval(this.timerInterval);
+      setTimerRunning(false);
     }
-  };
-  timerConvert = () => {
-    let minutes = Math.floor(this.state.timer / 60);
-    let seconds = Math.floor(this.state.timer % 60);
+  }, [timer, timerRunning]);
+
+  function timerConvert() {
+    if (timer < 0) {
+      setTimer(0);
+    }
+    let minutes = Math.floor(timer / 60);
+    let seconds = Math.floor(timer % 60);
+
     if (minutes < 10) {
       minutes = "0" + minutes;
     }
@@ -51,12 +49,9 @@ class Timer extends Component {
       seconds = "0" + seconds;
     }
     return minutes + "m" + seconds + "s";
-  };
-  state = { timer: 0, timerRunning: false };
-  render() {
-    console.log(this.state);
-    return <div>{this.timerConvert()}</div>;
   }
-}
+
+  return <div>{timerConvert()}</div>;
+};
 
 export default Timer;

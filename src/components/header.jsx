@@ -1,53 +1,49 @@
-import React, { Component } from "react";
+import React, { useState, useEffect } from "react";
 import Timer from "./timer";
 import TimerControl from "./timerControl";
-class Header extends Component {
-  componentDidMount() {
-    this.listenToServer();
-  }
-  listenToServer = () => {
-    this.props.socket.emit("gettimer");
-    this.props.socket.on("starttimer", (timer, timerRunning) => {
+const Header = (props) => {
+  const [timerStatus, setTimerStatus] = useState("stopped");
+  useEffect(() => {
+    props.socket.emit("gettimer");
+    props.socket.on("starttimer", (timer, timerRunning) => {
       if (timer > 0) {
         if (timerRunning) {
-          this.setState({ timerStatus: "running" });
+          setTimerStatus("running");
         } else {
-          this.setState({ timerStatus: "paused" });
+          setTimerStatus("paused");
         }
       }
     });
-  };
-  handlePause = () => {
-    if (this.state.timerStatus === "running") {
-      this.setState({ timerStatus: "paused" });
+    // eslint-disable-next-line
+  }, []);
+  function handlePause() {
+    if (timerStatus === "running") {
+      setTimerStatus("paused");
     } else {
-      this.setState({ timerStatus: "running" });
+      setTimerStatus("running");
     }
-    this.props.socket.emit("pausetimer");
-  };
-  handleStop = () => {
-    this.setState({ timerStatus: "stopped" });
-    this.props.socket.emit("stoptimer");
-  };
-  state = { timer: 0, timerStatus: "stopped" };
-  render() {
-    console.log(this.state);
-    return (
-      <div>
-        <div className="timer">
-          <Timer socket={this.props.socket} onStop={this.handleStop} />
-        </div>
-        <div className="header">
-          <TimerControl
-            timerStatus={this.state.timerStatus}
-            onStart={this.props.onStart}
-            onStop={this.handleStop}
-            onPause={this.handlePause}
-          />
-        </div>
-      </div>
-    );
+    props.socket.emit("pausetimer");
   }
-}
+  function handleStop() {
+    setTimerStatus("stopped");
+    props.socket.emit("stoptimer");
+  }
+
+  return (
+    <div>
+      <div className="timer">
+        <Timer socket={props.socket} onStop={handleStop} />
+      </div>
+      <div className="header">
+        <TimerControl
+          timerStatus={timerStatus}
+          onStart={props.onStart}
+          onStop={handleStop}
+          onPause={handlePause}
+        />
+      </div>
+    </div>
+  );
+};
 
 export default Header;
