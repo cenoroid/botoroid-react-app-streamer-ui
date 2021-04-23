@@ -4,8 +4,8 @@ import Footer from "./components/footer";
 import io from "socket.io-client";
 import axios from "axios";
 import "./App.css";
-const API = "http://localhost:4000/";
-//const API = "https://botoroid-express-app.herokuapp.com/";
+//const API = "http://localhost:4000/";
+const API = "https://botoroid-express-app.herokuapp.com/";
 const socket = io(API);
 const App = () => {
   const [requests, setRequests] = useState([]);
