@@ -32,6 +32,7 @@ const Timer = (props) => {
       }
     } else {
       setTimerRunning(false);
+      props.onTimerOver();
     }
   }, [timer, timerRunning]);
 

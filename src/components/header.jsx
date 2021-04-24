@@ -28,11 +28,17 @@ const Header = (props) => {
     setTimerStatus("stopped");
     props.socket.emit("stoptimer");
   }
-
+  function handleTimerOver() {
+    setTimerStatus("stopped");
+  }
   return (
     <div>
       <div className="timer">
-        <Timer socket={props.socket} onStop={handleStop} />
+        <Timer
+          socket={props.socket}
+          onStop={handleStop}
+          onTimerOver={handleTimerOver}
+        />
       </div>
       <div className="header">
         <TimerControl
