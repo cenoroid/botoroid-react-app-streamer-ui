@@ -34,6 +34,7 @@ const Timer = (props) => {
       setTimerRunning(false);
       props.onTimerOver();
     }
+    // eslint-disable-next-line
   }, [timer, timerRunning]);
 
   function timerConvert() {

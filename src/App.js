@@ -155,7 +155,7 @@ const App = () => {
               id={request.id}
               request={request}
             >
-              {request.id}.{" "}
+              {request.id}. {request.subtype}{" "}
               <div className="requestMessage">{request.message}</div> -{" "}
               {request.name}
             </a>
