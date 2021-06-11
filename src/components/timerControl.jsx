@@ -25,11 +25,9 @@ const TimerControl = (props) => {
   }
   if (props.timerStatus === "stopped") {
     return (
-      <div className="header">
-        <button onClick={props.onStart} className="buttonStart">
-          Start
-        </button>
-      </div>
+      <button onClick={props.onStart} className="buttonStart">
+        Start
+      </button>
     );
   }
   return (

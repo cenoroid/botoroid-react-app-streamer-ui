@@ -1,184 +1,175 @@
 import React, { useState, useEffect } from "react";
 import Header from "./components/header";
 import Footer from "./components/footer";
+import Settings from "./components/settings";
+import EditGoals from "./components/editGoals";
+import EditRedemptions from "./components/editRedemptions";
+import Requests from "./components/requests";
+import EventLog from "./components/eventLog";
 import io from "socket.io-client";
 import axios from "axios";
 import "./App.css";
-//const API = "http://localhost:4000/";
-const API = "https://botoroid.xyz/";
+//const API = "http://localhost:5000/";
+const API = "https://second.botoroid.xyz/";
 const socket = io(API);
+const version = "v0.0.2";
 const App = () => {
   const [requests, setRequests] = useState([]);
   const [logs, setLogs] = useState([]);
-  const [showLog, setShowLog] = useState(false);
+  const [show, setShow] = useState("main");
+  const [settings, setSettings] = useState();
+  const [goals, setGoals] = useState([]);
+  const [greenbar, setGreenbar] = useState({});
+
   useEffect(() => {
-    socket.emit("getrequests");
+    socket.emit("join", { name: "streamer", version });
     socket.on("getrequests", (data) => {
-      console.log("clock");
       setRequests(data);
+    });
+    socket.on("getsettings", (data) => {
+      setSettings(Object.values(data));
+    });
+    socket.on("getgoals", (data) => {
+      setGoals(data);
+    });
+    socket.on("greenbardata", (data) => {
+      setGreenbar({
+        goal: "pinata",
+        current: Number(Math.round(data.current)),
+        end: data.end,
+      });
+      let array = goals.push(greenbar);
+      console.log(goals);
     });
     return () => {
       socket.off("getrequests");
+      socket.off("getgoals");
+      socket.off("greenbardata");
+      socket.off("getsettings");
     };
   }, []);
-  useEffect(() => {}, [requests]);
-  function handleRemove(request) {
-    console.log(request);
-    socket.emit("deleterequest", request);
-  }
   function handleStart() {
     socket.emit("starttimer");
   }
-  let startingEntry;
-  let endingEntry;
-  //let highlights = document.querySelectorAll(".notHovering");
-  function dragStart(e) {
-    startingEntry = e.target.attributes.id.value;
-    let empties = document.querySelectorAll(".empty");
-    for (let empty of empties) {
-      empty.className = "emptyInteract";
-    }
-    document.querySelector(".firstempty").className = "firstemptyInteract";
-  }
-  function dragEnd() {
-    console.log("drag end");
-    let empties = document.querySelectorAll(".emptyInteract");
-    for (let empty of empties) {
-      empty.className = "empty";
-    }
-    document.querySelector(".firstemptyInteract").className = "firstempty";
-    let highlights = document.querySelectorAll(".hovering");
-    for (let highlight of highlights) {
-      highlight.className = "notHovering";
-    }
-  }
-  function dragOver(e) {
-    e.preventDefault();
-    e.stopPropagation();
-  }
-  function dragEnter(e) {
-    console.log(e.target.id);
-    let highlights = document.querySelector("#h" + e.target.id[1]);
-    console.log(highlights);
-    highlights.className = "hovering";
-    e.preventDefault();
-    e.stopPropagation();
-  }
-  function dragLeave(e) {
-    console.log(e.target.id);
-    let nohighlight = document.querySelector(".hovering");
-    nohighlight.className = "notHovering";
-  }
-  function dragDrop(e) {
-    endingEntry = e.target.id[1];
-    socket.emit("swaprequests", {
-      start: startingEntry,
-      end: endingEntry,
-    });
-  }
+
   function handleAddCurrency(username, value) {
     if (username !== "" && value !== "") {
       socket.emit("updatecurrency", { username, value });
     }
   }
   function handleExitLog() {
-    setShowLog(false);
+    setShow("main");
   }
   async function handleViewLog() {
     await axios.get(API + "getlogs").then((res) => {
       console.log(res.data);
-
       setLogs(res.data);
-      setShowLog(true);
+      setShow("log");
     });
+  }
+  function handleViewSettings() {
+    setShow("settings");
+  }
+  function handleSaveSettings(data) {
+    socket.emit("updatesettings", data);
   }
   function handleRefund(log) {
     socket.emit("refund", log);
     let oldLogs = [...logs];
-
     oldLogs.splice(log.id, 1);
-
     setLogs(oldLogs);
   }
-  if (showLog) {
+  function handleViewEditGoals() {
+    setShow("editGoals");
+  }
+  function handleUpdateGoals(data) {
+    console.log(data);
+    socket.emit("savegoals", data);
+  }
+  function handleDeleteGoal(data) {
+    socket.emit("deletegoal", data);
+  }
+  function handleViewEditRedemptions() {
+    setShow("editRedemptions");
+  }
+  function handleUpdateRedemptions(data) {
+    console.log(data);
+    socket.emit("saveredemptions", data);
+  }
+  function handleDeleteRedemption(data) {
+    socket.emit("deleteredemption", data);
+  }
+
+  if (show === "log") {
     return (
       <div>
-        <button onClick={handleExitLog}>←</button>
-        {logs.map((log) => {
-          return (
-            <div key={log._id}>
-              {log.text}
-
-              <button
-                onClick={() => handleRefund(log)}
-                style={{ width: 20, height: 20 }}
-              >
-                🗘
-              </button>
-            </div>
-          );
-        })}
+        <EventLog
+          logs={logs}
+          onExitLog={handleExitLog}
+          onRefund={handleRefund}
+        />
       </div>
     );
   }
+  if (show === "settings") {
+    return (
+      <div>
+        <Settings
+          settings={settings}
+          onSaveSettings={handleSaveSettings}
+          onViewMain={() => setShow("main")}
+        />
+      </div>
+    );
+  }
+  if (show === "editGoals") {
+    return (
+      <EditGoals
+        socket={socket}
+        onViewMain={() => setShow("main")}
+        onSaveGoals={handleUpdateGoals}
+        onDeleteGoal={handleDeleteGoal}
+        propGoals={goals}
+      />
+    );
+  }
+  if (show === "editRedemptions") {
+    return (
+      <EditRedemptions
+        socket={socket}
+        onViewMain={() => setShow("main")}
+        onSaveRedemptions={handleUpdateRedemptions}
+        onDeleteRedemption={handleDeleteRedemption}
+      />
+    );
+  }
   return (
-    <div>
-      <Header
-        socket={socket}
-        API={API}
-        onStart={() => {
-          handleStart();
-        }}
-      />
-      <div
-        className="firstempty"
-        id="e0"
-        onDragOver={(e) => dragOver(e)}
-        onDragEnter={(e) => dragEnter(e)}
-        onDragLeave={(e) => dragLeave(e)}
-        onDrop={(e) => dragDrop(e)}
-      ></div>
-      <div className="notHovering" id="h0"></div>
-      {requests.map((request) => (
-        <div key={"keyR" + request.id}>
-          <div
-            className="button1"
-            draggable="true"
-            onDragEnd={dragEnd}
-            onDragStart={(e) => dragStart(e)}
-          >
-            <a
-              onAuxClick={handleStart}
-              onClick={(e) => e.preventDefault()}
-              className="link"
-              href={request.link || ""}
-              id={request.id}
-              request={request}
-            >
-              {request.id}. {request.subtype}{" "}
-              <div className="requestMessage">{request.message}</div> -{" "}
-              {request.name}
-            </a>
-          </div>
-          <button className="button2" onClick={() => handleRemove(request)}>
-            X
-          </button>
-          <div
-            onDragOver={(e) => dragOver(e)}
-            onDragEnter={(e) => dragEnter(e)}
-            onDragLeave={(e) => dragLeave(e)}
-            onDrop={(e) => dragDrop(e)}
-            className="empty"
-            id={"e" + request.id}
-          ></div>
-          <div className="notHovering" id={"h" + request.id}></div>
-        </div>
-      ))}
-      <Footer
-        socket={socket}
-        onViewLog={() => handleViewLog()}
-        onCbucksAdd={(username, amount) => handleAddCurrency(username, amount)}
-      />
+    <div className="mainContainer">
+      <header className="header">
+        <Header
+          socket={socket}
+          API={API}
+          onStart={() => {
+            handleStart();
+          }}
+        />
+      </header>
+      <main className="requestsContainer">
+        <Requests requests={requests} socket={socket} />
+      </main>
+      <footer className="footer">
+        <Footer
+          goals={goals.concat(greenbar)}
+          socket={socket}
+          onViewLog={handleViewLog}
+          onCbucksAdd={(username, amount) =>
+            handleAddCurrency(username, amount)
+          }
+          onViewSettings={handleViewSettings}
+          onViewEditGoals={handleViewEditGoals}
+          onViewEditStore={handleViewEditRedemptions}
+        />
+      </footer>
     </div>
   );
 };

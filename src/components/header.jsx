@@ -40,7 +40,7 @@ const Header = (props) => {
           onTimerOver={handleTimerOver}
         />
       </div>
-      <div className="header">
+      <div className="timerControl">
         <TimerControl
           timerStatus={timerStatus}
           onStart={props.onStart}
