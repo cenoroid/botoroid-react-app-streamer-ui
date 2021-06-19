@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from "react";
 import _ from "lodash";
-const EditRedemptions = (props) => {
-  const [redemptions, setRedemptions] = useState([]);
+import { Link } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { deleteRedemption, updateRedemptions } from "./../store/actions";
+
+const EditRedemptions = () => {
+  const dispatch = useDispatch();
+  const initRedemptions = useSelector((state) => state.entities.redemptions);
+  const [redemptions, setRedemptions] = useState([...initRedemptions]);
   const [value, setValue] = useState({});
+
   useEffect(() => {
-    props.socket.emit("getredemptions");
-    props.socket.on("getredemptions", (data) => {
-      setRedemptions(data);
-    });
-    return () => {
-      props.socket.off("getredemptions");
-    };
-  }, []);
+    setRedemptions([...initRedemptions]);
+  }, [initRedemptions]);
 
   return (
     <div className="editRedemptionsContainer ">
@@ -52,7 +53,6 @@ const EditRedemptions = (props) => {
                           Object.values(redemption)[index] !== "" &&
                           isNaN(input)
                         ) {
-                          console.log("yes it does");
                           return;
                         } else {
                           setValue((prev) => {
@@ -72,7 +72,7 @@ const EditRedemptions = (props) => {
                   </div>
                 ) : null
               )}
-              <button onClick={() => props.onDeleteRedemption(redemption)}>
+              <button onClick={() => dispatch(deleteRedemption(redemption))}>
                 Delete Redemption
               </button>
             </div>
@@ -99,13 +99,15 @@ const EditRedemptions = (props) => {
       </button>
       <button
         onClick={() => {
-          props.onSaveRedemptions(value);
+          dispatch(updateRedemptions(value));
           setValue({});
         }}
       >
         Save
       </button>
-      <button onClick={props.onViewMain}>go back it</button>
+      <Link className="button" to="/">
+        go back it
+      </Link>
     </div>
   );
 };

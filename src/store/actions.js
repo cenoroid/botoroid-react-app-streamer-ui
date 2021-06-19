@@ -1,0 +1,21 @@
+import { createAction } from "@reduxjs/toolkit";
+
+export const initApp = createAction("initApp");
+export const getRequests = createAction("entities/getRequests");
+export const swapRequests = createAction("swapRequests");
+export const deleteRequest = createAction("deleteRequest");
+export const getGoals = createAction("entities/getGoals");
+export const updateGoals = createAction("updateGoals");
+export const deleteGoal = createAction("deleteGoal");
+export const resetGoal = createAction("resetGoal");
+export const getRedemptions = createAction("entities/getRedemptions");
+export const updateRedemptions = createAction("updateRedemptions");
+export const deleteRedemption = createAction("deleteRedemption");
+export const getSettings = createAction("appConfig/getSettings");
+export const updateSettings = createAction("updateSettings");
+export const getTimer = createAction("appConfig/getTimer");
+export const startTimer = createAction("startTimer");
+export const pauseTimer = createAction("pauseTimer");
+export const stopTimer = createAction("stopTimer");
+export const refund = createAction("refund");
+export const updateCurrency = createAction("updateCurrency");

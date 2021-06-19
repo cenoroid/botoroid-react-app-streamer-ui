@@ -1,10 +1,15 @@
 import React from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { deleteRequest, swapRequests } from "../store/actions";
+import { startTimer } from "./../store/actions";
 
-const Requests = (props) => {
-  const { requests } = props;
+const Requests = () => {
+  const dispatch = useDispatch();
+
   function handleRemove(request) {
-    props.socket.emit("deleterequest", request);
+    dispatch(deleteRequest(request));
   }
+  const requests = useSelector((state) => state.entities.requests);
 
   let startingEntry;
   let endingEntry;
@@ -45,13 +50,15 @@ const Requests = (props) => {
   }
   function dragDrop(e) {
     endingEntry = e.target.id.substring(1);
-    props.socket.emit("swaprequests", {
-      start: startingEntry,
-      end: endingEntry,
-    });
+    dispatch(
+      swapRequests({
+        start: startingEntry,
+        end: endingEntry,
+      })
+    );
   }
   return (
-    <div>
+    <div className="requestsContainer">
       <div
         className="firstempty"
         id="e0"
@@ -73,7 +80,7 @@ const Requests = (props) => {
             >
               {request.link ? (
                 <a
-                  onAuxClick={props.onStart}
+                  onAuxClick={() => dispatch(startTimer())}
                   onClick={(e) => e.preventDefault()}
                   className="link"
                   href={request.link}
@@ -88,9 +95,8 @@ const Requests = (props) => {
                 <div>
                   <div
                     className="nolink"
-                    onAuxClick={props.onStart}
+                    onAuxClick={() => dispatch(startTimer())}
                     onClick={(e) => e.preventDefault()}
-                    request={request}
                   >
                     {request.id}. {request.subtype + " - " + request.name}
                   </div>

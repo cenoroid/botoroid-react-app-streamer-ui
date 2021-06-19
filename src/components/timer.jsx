@@ -1,49 +1,51 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { getTimer } from "../store/actions";
+import { setTimerRunning, setTimer } from "../store/appConfig";
 
-const Timer = (props) => {
-  const [timer, setTimer] = useState(0);
-  const [timerRunning, setTimerRunning] = useState(false);
+const Timer = () => {
+  const dispatch = useDispatch();
+  const { remaining, running: timerRunning } = useSelector(
+    (state) => state.appConfig.timer
+  );
+  const [timer, setCurrentTimer] = useState();
+  const timeout = useRef();
+  const currentTimer = useRef();
+
   useEffect(() => {
-    props.socket.on("starttimer", (resTimer, resTimerRunning) => {
-      if (resTimer > 0) {
-        setTimer(resTimer);
-        setTimerRunning(resTimerRunning);
-      }
-    });
-    props.socket.on("pausetimer", () => {
-      setTimerRunning((prev) => !prev);
-    });
-    props.socket.on("stoptimer", () => {
-      setTimer(0);
-    });
+    dispatch(getTimer());
     return () => {
-      props.socket.off("stoptimer");
-      props.socket.off("pausetimer");
-      props.socket.off("starttimer");
+      currentTimer.current && dispatch(setTimer(currentTimer.current));
     };
-    // eslint-disable-next-line
-  }, []);
+  }, [dispatch]);
+
   useEffect(() => {
-    if (timer > 0) {
-      if (timerRunning) {
-        setTimeout(() => {
-          setTimer((prev) => prev - 1);
-        }, 1000);
+    setCurrentTimer(remaining);
+  }, [remaining]);
+
+  useEffect(() => {
+    if (!timerRunning || timer <= 0) return;
+
+    let lastUpdate = Date.now();
+    timeout.current = setTimeout(() => {
+      const now = Date.now();
+      const deltaTime = now - lastUpdate;
+      const newTime = timer - deltaTime / 1000;
+      if (newTime <= 0) {
+        return dispatch(setTimerRunning(false));
       }
-    } else {
-      setTimerRunning(false);
-      props.onTimerOver();
-    }
-    // eslint-disable-next-line
-  }, [timer, timerRunning]);
+      setCurrentTimer(newTime);
+      currentTimer.current = timer;
+    }, 200);
+
+    return () => {
+      clearTimeout(timeout.current);
+    };
+  }, [timer, timerRunning, dispatch]);
 
   function timerConvert() {
-    if (timer < 0) {
-      setTimer(0);
-    }
     let minutes = Math.floor(timer / 60);
     let seconds = Math.floor(timer % 60);
-
     if (minutes < 10) {
       minutes = "0" + minutes;
     }

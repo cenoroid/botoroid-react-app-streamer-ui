@@ -1,42 +1,27 @@
 import React from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { pauseTimer, stopTimer, startTimer } from "./../store/actions";
 
-const TimerControl = (props) => {
-  function buttonPause() {
-    if (props.timerStatus === "paused") {
-      return (
-        <button
-          onClick={props.onPause}
-          onMouseDown={(e) => e.preventDefault()}
-          className="buttonPaused"
-        >
-          II
-        </button>
-      );
-    }
-    return (
+const TimerControl = () => {
+  const dispatch = useDispatch();
+  const { remaining, running } = useSelector((state) => state.appConfig.timer);
+
+  return remaining > 0 ? (
+    <div>
+      <button onClick={() => dispatch(stopTimer())} className="buttonStop">
+        Stop
+      </button>
       <button
-        onClick={props.onPause}
-        onMouseDown={(e) => e.preventDefault()}
-        className="buttonPause"
+        onClick={() => dispatch(pauseTimer())}
+        className={running ? "buttonPause" : "buttonPaused"}
       >
         II
       </button>
-    );
-  }
-  if (props.timerStatus === "stopped") {
-    return (
-      <button onClick={props.onStart} className="buttonStart">
-        Start
-      </button>
-    );
-  }
-  return (
-    <div>
-      <button onClick={props.onStop} className="buttonStop">
-        Stop
-      </button>
-      {buttonPause()}
     </div>
+  ) : (
+    <button onClick={() => dispatch(startTimer())} className="buttonStart">
+      Start
+    </button>
   );
 };
 

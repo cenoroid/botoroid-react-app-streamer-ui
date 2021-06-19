@@ -1,11 +1,15 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { updateSettings } from "./../store/actions";
 
-const Settings = (props) => {
+const Settings = () => {
+  const dispatch = useDispatch();
   const [value, setValue] = useState({});
-
+  const settings = useSelector((state) => state.entities.settings);
   return (
     <div className="settingsContainer">
-      {props.settings.map((item) => (
+      {settings.map((item) => (
         <div className="typeContainer" key={item.type}>
           <div className="settingsType">{item.type}</div>
           {Object.entries(item).map((iitem) => {
@@ -85,12 +89,14 @@ const Settings = (props) => {
       ))}
       <button
         onClick={() => {
-          props.onSaveSettings(value);
+          dispatch(updateSettings(value));
         }}
       >
         Save Settings
       </button>
-      <button onClick={props.onViewMain}>go back it</button>
+      <Link className="button" to="/">
+        go back it
+      </Link>
     </div>
   );
 };

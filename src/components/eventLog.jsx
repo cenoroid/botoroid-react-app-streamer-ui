@@ -1,16 +1,22 @@
 import React from "react";
-
-const EventLog = (props) => {
+import { Link } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { refund } from "../store/actions";
+const EventLog = () => {
+  const dispatch = useDispatch();
+  const logs = useSelector((state) => state.entities.logs);
   return (
     <div>
-      <button onClick={props.onExitLog}>←</button>
-      {props.logs.map((log) => {
+      <Link className="button" to="/">
+        ←
+      </Link>
+      {logs.map((log) => {
         return (
           <div key={log._id}>
             {log.text}
 
             <button
-              onClick={() => props.onhandleRefund(log)}
+              onClick={() => dispatch(refund(log))}
               style={{ width: 20, height: 20 }}
             >
               🗘

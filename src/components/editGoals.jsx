@@ -1,13 +1,21 @@
 import React, { useState, useEffect } from "react";
 import _ from "lodash";
-const EditGoals = (props) => {
-  let { propGoals } = props;
+import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
+import { deleteGoal } from "../store/actions";
+import { updateGoals } from "./../store/actions";
+
+const EditGoals = () => {
+  const dispatch = useDispatch();
+  const initGoals = useSelector((state) => state.entities.goals);
   const [value, setValue] = useState({});
-  const [goals, setGoals] = useState(propGoals);
+  const [goals, setGoals] = useState([...initGoals]);
 
   useEffect(() => {
-    setGoals(propGoals);
-  }, [propGoals]);
+    setGoals([...initGoals]);
+  }, [initGoals]);
+
   return (
     <div className="editGoalsContainer ">
       {goals.map((goal, index) => (
@@ -64,7 +72,7 @@ const EditGoals = (props) => {
                   </div>
                 ) : null
               )}
-              <button onClick={() => props.onDeleteGoal(goal)}>
+              <button onClick={() => dispatch(deleteGoal(goal))}>
                 Delete Goal
               </button>
             </div>
@@ -85,13 +93,15 @@ const EditGoals = (props) => {
       </button>
       <button
         onClick={() => {
-          props.onSaveGoals(value);
+          dispatch(updateGoals(value));
           setValue({});
         }}
       >
         Save
       </button>
-      <button onClick={props.onViewMain}>go back it</button>
+      <Link className="button" to="/">
+        go back it
+      </Link>
     </div>
   );
 };
