@@ -7,9 +7,8 @@ const slice = createSlice({
   },
   reducers: {
     initTimer: (state, action) => {
-      if (!state.timer.initialized) {
-        state.timer.initialized = true;
-      }
+      if (!state.timer.initialized) state.timer.initialized = true;
+
       const { timer, timerRunning } = action.payload;
       state.timer.remaining = timer;
       state.timer.running = timerRunning;
@@ -28,9 +27,9 @@ const slice = createSlice({
     },
 
     setTimerRunning: (state, action) => {
-      if (action.payload === "toggle") {
+      if (action.payload === "toggle")
         state.timer.running = !state.timer.running;
-      } else state.timer.running = action.payload;
+      else state.timer.running = action.payload;
     },
   },
 });

@@ -11,6 +11,7 @@ const EventLog = () => {
         ←
       </Link>
       {logs.map((log) => {
+        console.log(logs);
         return (
           <div key={log._id}>
             {log.text}
